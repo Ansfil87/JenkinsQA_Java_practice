@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  # ручной запуск всех тестов: вкладка Actions -> CI -> Run workflow
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-test:
+    name: 'Run tests'
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+    steps:
+      - name: Git clone
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - name: Install JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: '25'
+          cache: 'maven'
+
+      # только для PR: прогоняются лишь тесты, затронутые изменениями
+      - name: Get list of changed files
+        if: github.event_name == 'pull_request'
+        run: echo "LIST_OF_CHANGED_FILES=$(git diff --name-status $(git merge-base origin/$GITHUB_HEAD_REF origin/main) origin/$GITHUB_HEAD_REF | tr '\n' ';' | tr '\t' '=')" >> $GITHUB_ENV
+
+      - name: Compile tests
+        run: mvn test-compile
+
+      - name: Get collections of class dependencies
+        run: echo "LIST_OF_DEPENDENCIES_CLASSES=$(jdeps -verbose:class -filter:none -recursive ./target/test-classes | grep "school.redrover.*-> school.redrover" | awk '{print $3 "=" $1}' | tr '\n' ';')" >> $GITHUB_ENV
+
+# tar -cvf jenkins_backup.tar ./jenkins_backup
+# split -b 49m -d jenkins_backup.tar jenkins_backup
+
+# git subtree add --prefix=_jenkins_data https://github.com/RedRoverSchool/JenkinsQA_Data_2026_fall.git main --squash
+
+      - name: Prepare Jenkins data
+        run: |
+          cat ${{ github.workspace }}/_jenkins_data/jenkins_backup* > ${{ github.workspace }}/jenkins_backup.tar
+          md5sum ${{ github.workspace }}/jenkins_backup.tar
+
+      - name: Extract Jenkins data and set permission
+        run: |
+          tar -xvf ./jenkins_backup.tar
+          chmod -R 777 ./jenkins_backup/var/jenkins_home
+
+      # необязательный шаг: выполняется, только если заданы секреты DOCKER_USERNAME / DOCKER_PASSWORD
+      - name: Docker login
+        if: env.DOCKER_USERNAME != ''
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+      - name: Docker start
+        run: docker run --rm --detach -p 8080:8080 -v ${{ github.workspace }}/jenkins_backup/var/jenkins_home:/var/jenkins_home jenkins/jenkins:2.580.1-lts-jdk25
+
+      - name: Wait for the Jenkins
+        run: ./.github/wait-for-jenkins.sh
+
+      - name: Maven test
+        run: mvn test
+        env:
+          JENKINS_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          JENKINS_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          JENKINS_HOST: localhost
+          JENKINS_PORT: 8080
+          BROWSER_NAME: chrome
+          BROWSER_OPTIONS_CHROME: --remote-allow-origins=*;--disable-gpu;--no-sandbox;--disable-dev-shm-usage;--headless=new;--window-size=1920,1080
+          RUN_CI: true
+
+      - name: Add screenshot
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshots
+          path: ${{ github.workspace }}/screenshots
+          if-no-files-found: ignore

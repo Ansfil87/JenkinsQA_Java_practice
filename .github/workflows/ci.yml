@@ -55,6 +55,8 @@ jobs:
       - name: Extract Jenkins data and set permission
         run: |
           tar -xvf ./jenkins_backup.tar
+          mkdir -p ./jenkins_backup/var/jenkins_home/init.groovy.d
+          cp ./.github/jenkins-init/*.groovy ./jenkins_backup/var/jenkins_home/init.groovy.d/
           chmod -R 777 ./jenkins_backup/var/jenkins_home
 
       # необязательный шаг: выполняется, только если заданы секреты DOCKER_USERNAME / DOCKER_PASSWORD
@@ -62,8 +64,12 @@ jobs:
         if: env.DOCKER_USERNAME != ''
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
+      # пароль admin берётся из секретов и выставляется скриптом .github/jenkins-init/set-admin-password.groovy
       - name: Docker start
-        run: docker run --rm --detach -p 8080:8080 -v ${{ github.workspace }}/jenkins_backup/var/jenkins_home:/var/jenkins_home jenkins/jenkins:2.580.1-lts-jdk25
+        env:
+          JENKINS_ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          JENKINS_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: docker run --rm --detach -p 8080:8080 -e JENKINS_ADMIN_USERNAME -e JENKINS_ADMIN_PASSWORD -v ${{ github.workspace }}/jenkins_backup/var/jenkins_home:/var/jenkins_home jenkins/jenkins:2.580.1-lts-jdk25
 
       - name: Wait for the Jenkins
         run: ./.github/wait-for-jenkins.sh

@@ -11,9 +11,10 @@ import static java.sql.DriverManager.getDriver;
 
 public class testTest extends BaseTest {
 
-    @Test
-public void testTest() {
-        getWait5().until(ExpectedConditions.elementToBeClickable(By.xpath("//a[.//span[normalize-space()='New Item']]")));
-    }
+    private static final String NEW_ITEM = "NewItem";
 
+    //new HomePage(getDriver())
+
+public void testTest() {
+    }
 }

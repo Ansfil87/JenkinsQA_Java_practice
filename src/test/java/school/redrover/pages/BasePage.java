@@ -7,12 +7,14 @@ import org.testng.annotations.Test;
 
 public class BasePage extends BaseModel {
 
+    private final By jenkinsLogo = By.xpath("//a[@class='app-jenkins-logo']");
+
     public BasePage(WebDriver driver) {
         super(driver);
     }
 
     public HomePage goToHomePage() {
-        getDriver().findElement(By.xpath("//a[@class='app-jenkins-logo']")).click();
+        getDriver().findElement(jenkinsLogo).click();
 
         return new HomePage(getDriver());
     }

@@ -7,6 +7,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 public class FolderConfigurationPage extends BasePage{
 
     private final By submitButton = By.name("Submit");
+    private final By displayField = By.xpath("//input[@name='_.displayNameOrNull']");
+    private final By descriptionField = By.xpath("//textarea[@name='_.description']");
 
     public FolderConfigurationPage(WebDriver driver)  {
         super(driver);
@@ -17,5 +19,17 @@ public class FolderConfigurationPage extends BasePage{
         getWait5().until(ExpectedConditions.not(ExpectedConditions.urlContains("/configure")));
 
         return new FolderStatusPage(getDriver());
+    }
+
+    public FolderConfigurationPage sendDisplayName(String displayName) {
+        getDriver().findElement(displayField ).sendKeys(displayName);
+
+        return this;
+    }
+
+    public FolderConfigurationPage sendDescription(String description) {
+
+        getDriver().findElement(descriptionField).sendKeys(description);
+        return this;
     }
 }

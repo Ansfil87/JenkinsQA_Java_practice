@@ -34,4 +34,10 @@ public class HomePage extends BasePage {
     public String getFirstProjectName() {
         return getDriver().findElement(item).getText();
     }
+
+    public FolderStatusPage clickFolder(String name) {
+        getWait5().until(ExpectedConditions.elementToBeClickable(By.linkText(name))).click();
+
+        return new FolderStatusPage(getDriver());
+    }
 }

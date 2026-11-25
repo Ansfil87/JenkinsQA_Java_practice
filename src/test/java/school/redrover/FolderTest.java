@@ -12,6 +12,7 @@ public class FolderTest extends BaseTest {
     private static final String FOLDER_NAME = "My Folder";
     private static final String DISPLAY_NAME = "My new folder";
     private static final String DESCRIPTION = "My new folder description";
+    private static final String NEW_DESCRIPTION = "New description";
 
     @Test
     public void testCreate() {
@@ -41,5 +42,18 @@ public class FolderTest extends BaseTest {
 
         Assert.assertEquals(folderPage.getHeading(), DISPLAY_NAME);
         Assert.assertEquals(folderPage.getDescription(), DESCRIPTION);
+    }
+
+    @Test(dependsOnMethods = "testDisplayNameAndDescription")
+    public void testApplyShowsSavedNotification() {
+
+        String notificationText = new HomePage(getDriver())
+                .clickFolder(DISPLAY_NAME)
+                .clickConfigure()
+                .sendDescription(NEW_DESCRIPTION)
+                .clickApply()
+                .getNotificationText();
+
+        Assert.assertEquals(notificationText, "Saved");
     }
 }

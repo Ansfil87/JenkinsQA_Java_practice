@@ -48,5 +48,4 @@ public class FolderConfigurationPage extends BasePage {
         return getWait5().until(ExpectedConditions.visibilityOfElementLocated(notificationBar)).getText();
     }
 
-
 }

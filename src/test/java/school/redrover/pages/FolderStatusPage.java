@@ -2,6 +2,7 @@ package school.redrover.pages;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class FolderStatusPage extends BasePage{
 
@@ -15,5 +16,11 @@ public class FolderStatusPage extends BasePage{
 
     public String getDescription() {
         return getDriver().findElement(By.id("view-message")).getText();
+    }
+
+    public FolderConfigurationPage clickConfigure() {
+        getWait5().until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(@href, '/configure')]"))).click();
+
+        return new FolderConfigurationPage(getDriver());
     }
 }

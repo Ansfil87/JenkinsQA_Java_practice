@@ -37,11 +37,14 @@ public void testTest() {
     getWait5().until(ExpectedConditions.not(ExpectedConditions.urlContains("/configure")));
     getDriver().findElement(jenkinsLogo).click();
     getWait5().until(ExpectedConditions.elementToBeClickable(By.linkText("NewItem"))).click();
-    getWait5().until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(@href, '/configure')]"))).click();
-    getDriver().findElement(descriptionField).clear();
-    getDriver().findElement(By.name("Apply")).click();
-    getWait5().until(ExpectedConditions.visibilityOfElementLocated(By.id("notification-bar")));
+   // getWait5().until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(@href, '/configure')]"))).click();
+//    getDriver().findElement(descriptionField).clear();
+//    getDriver().findElement(By.name("Apply")).click();
+//    getWait5().until(ExpectedConditions.visibilityOfElementLocated(By.id("notification-bar")));
 
+    getWait5().until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[contains(@href, '/confirm-rename')]"))).click();
+    getDriver().findElement(By.name("newName")).click();
+    getDriver().findElement(By.name("Submit")).click();
 
 
 

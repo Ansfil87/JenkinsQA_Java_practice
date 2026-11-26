@@ -6,6 +6,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class FolderStatusPage extends BasePage{
 
+    private final By configureButton = By.xpath("//a[contains(@href, '/configure')]");
+    private final By renameButton = By.xpath("//a[contains(@href, '/confirm-rename')]");
+
     public FolderStatusPage(WebDriver driver) {
         super(driver);
     }
@@ -19,8 +22,14 @@ public class FolderStatusPage extends BasePage{
     }
 
     public FolderConfigurationPage clickConfigure() {
-        getWait5().until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(@href, '/configure')]"))).click();
+        getWait5().until(ExpectedConditions.elementToBeClickable(configureButton)).click();
 
         return new FolderConfigurationPage(getDriver());
+    }
+
+    public RenamePage clickRename() {
+        getWait5().until(ExpectedConditions.elementToBeClickable(renameButton)).click();
+
+        return new RenamePage(getDriver());
     }
 }
